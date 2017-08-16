@@ -36,7 +36,16 @@ public class Database {
 
 
     public void executeUpdateQuery(String userNameText, String passwordText) throws SQLException {
+        System.out.println("incerc suca");
         statement.executeUpdate("INSERT INTO users (userName, password) VALUES('" + userNameText + "', '" + passwordText +"')");
+    }
+
+    public boolean executeSelect(String userNameText, String passwordText) throws SQLException {
+        resultSet = statement.executeQuery("SELECT userName, password FROM users WHERE userName = '" + userNameText + "' AND password = '" + passwordText + "'");
+        if (resultSet.next()) {
+            return true;
+        }
+        return false;
     }
 
     public void setController(Controller controller) {

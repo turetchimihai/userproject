@@ -42,8 +42,8 @@ public class Window extends JFrame implements  ActionListener {
         dialogReg      = new JDialog(this, "Register", true);
         okButtonLog    = new JButton("OK");
         okButtonReg    = new JButton("OK");
-        dialogLabelLog = new JLabel("gfdsgfds");
-        dialogLabelReg = new JLabel("Hello");
+        dialogLabelLog = new JLabel("");
+        dialogLabelReg = new JLabel("");
 
         userNameLabel.setBounds(10, 10, 80, 20);
         passowrdLabel.setBounds(10, 30, 80, 20);
@@ -115,9 +115,9 @@ public class Window extends JFrame implements  ActionListener {
                       try {
                           controller.connectToDatabase();
                           System.out.println("Loging...");
-                          if (controller.tryToLogin(userNameText.getText(), passwordText.getText()) == true) {
+                          if (controller.tryToLogin(userNameText.getText(), passwordText.getText())) {
+                              dialogLabelLog.setText("Hello " + userNameText.getText());
                               dialogLog.setVisible(true);
-                              dialogLabelLog.setText("Hello ");
                           } else {
                               setTitle("Incorrect name/pwd");
                           }
@@ -138,8 +138,10 @@ public class Window extends JFrame implements  ActionListener {
                           controller.connectToDatabase();
                           System.out.println("Registering...");
                           if (controller.tryToRegister(userNameText.getText(), passwordText.getText())) {
+                              dialogLabelReg.setText("Registered!");
                               dialogReg.setVisible(true);
-                              dialogLabelReg.setText("Hhgdhg");
+                          } else {
+                              setTitle("Failed");
                           }
                       } catch (SQLException e1) {
                           e1.printStackTrace();
