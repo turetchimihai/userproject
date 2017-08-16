@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 
 public class Window extends JFrame implements  ActionListener {
@@ -19,10 +21,9 @@ public class Window extends JFrame implements  ActionListener {
     private JDialog    dialogReg;
     private JLabel     dialogLabelLog;
     private JLabel     dialogLabelReg;
-    private Database   database;
-    private Verifier   verifier;
+    private Controller controller;
 
-    public Window() {
+    public Window() throws SQLException, ClassNotFoundException {
         super("Loggin");
         setLayout(null);
 
@@ -41,9 +42,8 @@ public class Window extends JFrame implements  ActionListener {
         dialogReg      = new JDialog(this, "Register", true);
         okButtonLog    = new JButton("OK");
         okButtonReg    = new JButton("OK");
-        dialogLabelLog = new JLabel("Hello");
+        dialogLabelLog = new JLabel("gfdsgfds");
         dialogLabelReg = new JLabel("Hello");
-        verifier       = new Verifier();
 
         userNameLabel.setBounds(10, 10, 80, 20);
         passowrdLabel.setBounds(10, 30, 80, 20);
@@ -58,6 +58,7 @@ public class Window extends JFrame implements  ActionListener {
         okButtonLog.setBounds(10, 60, 280, 20);
         okButtonReg.setBounds(10, 60, 280, 20);
         dialogLabelLog.setBounds(10, 10, 280, 20);
+        dialogLabelReg.setBounds(10, 10, 280, 20);
 
         add(loginButton);
         add(passowrdLabel);
@@ -77,6 +78,32 @@ public class Window extends JFrame implements  ActionListener {
         registerButton.addActionListener(this);
         okButtonLog.addActionListener(this);
         okButtonReg.addActionListener(this);
+
+        dialogLog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                try {
+                    controller.disconnectFromDatabase();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        dialogReg.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                try {
+                    controller.disconnectFromDatabase();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -84,45 +111,51 @@ public class Window extends JFrame implements  ActionListener {
           switch (e.getActionCommand()) {
 
               case "Login" : {
-                  if (verifier.verifierLength(userNameText.getText()) && verifier.verifierLength(passwordText.getText())) {
+                  if (controller.verifyStringLength(userNameText.getText()) && controller.verifyStringLength(passwordText.getText()) == true) {
                       try {
-                          database.connect();
+                          controller.connectToDatabase();
                           System.out.println("Loging...");
-                          dialogLog.setVisible(true);
-                      } catch (ClassNotFoundException e1) {
-                          e1.printStackTrace();
+                          if (controller.tryToLogin(userNameText.getText(), passwordText.getText()) == true) {
+                              dialogLog.setVisible(true);
+                              dialogLabelLog.setText("Hello ");
+                          } else {
+                              setTitle("Incorrect name/pwd");
+                          }
                       } catch (SQLException e1) {
+                          e1.printStackTrace();
+                      } catch (ClassNotFoundException e1) {
                           e1.printStackTrace();
                       }
                   } else {
-                      setTitle("Minim 6 char");
+                      setTitle("Enought characters");
                   }
                   break;
               }
 
               case "Register" : {
-                  if (verifier.verifierLength(userNameText.getText()) && verifier.verifierLength(passwordText.getText())) {
+                  if (controller.verifyStringLength((userNameText.getText())) == true && controller.verifyStringLength(passwordText.getText()) == true) {
                       try {
-                          database.connect();
+                          controller.connectToDatabase();
                           System.out.println("Registering...");
-                          database.executeUpdateQuery(userNameText.getText(), passwordText.getText());
-                          dialogReg.setVisible(true);
-                          database.closeConnection();
-                      } catch (ClassNotFoundException e1) {
-                          e1.printStackTrace();
+                          if (controller.tryToRegister(userNameText.getText(), passwordText.getText())) {
+                              dialogReg.setVisible(true);
+                              dialogLabelReg.setText("Hhgdhg");
+                          }
                       } catch (SQLException e1) {
+                          e1.printStackTrace();
+                      } catch (ClassNotFoundException e1) {
                           e1.printStackTrace();
                       }
                   } else {
-                      setTitle("Minim 6 char");
+                      setTitle("Enought characters");
                   }
                   break;
               }
 
               case "OK" : {
                   try {
-                      database.closeConnection();
                       System.out.println("OK");
+                      controller.disconnectFromDatabase();
                       dialogLog.setVisible(false);
                       dialogReg.setVisible(false);
                   } catch (SQLException e1) {
@@ -132,9 +165,4 @@ public class Window extends JFrame implements  ActionListener {
               }
           }
     }
-
-    public void setDatabase(Database database) {
-        this.database = database;
-    }
-
 }
